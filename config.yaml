@@ -1,0 +1,21 @@
+ontology:
+    a teal ball: algae
+    a white PVC tube: coral
+raw_dataset:
+    path: raw
+dataset:
+    path: complete
+test:
+    input_path: dataset
+    output_path: runs/test
+    number_of_images: 4
+    show: false
+    save: true
+grounding_dino:
+    model_path: models/grounding_dino.pth
+    confidence_threshold: 0.3
+    box_threshold: 0.25
+cli:
+    mode: pretrain_mode
+    verbose: true
+prueba: prueba
