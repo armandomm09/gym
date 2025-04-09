@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -24,23 +26,74 @@ func getConfig() Config {
 
 }
 
+func killLabelStudio() error {
+
+	cmd := exec.Command("sh", "-c", "ps aux | grep label-studio | grep -v grep")
+	out, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("error al listar procesos: %w", err)
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+		pid := fields[1]
+
+		killCmd := exec.Command("kill", pid)
+		if err := killCmd.Run(); err != nil {
+			log.Printf("No se pudo matar PID %s: %v", pid, err)
+		} else {
+			fmt.Printf("Proceso label‑studio detenido (PID=%s)\n", pid)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error leyendo salida: %w", err)
+	}
+	return nil
+}
+
 func execute_python_script(args ...string) {
 
 	comand := exec.Command("python/.venv/bin/python3", args...)
-	stdout, err := comand.StdoutPipe()
+
+	stdoutPipe, err := comand.StdoutPipe()
 	if err != nil {
-		log.Fatalln("Error executing comand")
+		log.Fatalf("Error al obtener stdout: %v", err)
 	}
 
-	// start the command after having set up the pipe
+	stderrPipe, err := comand.StderrPipe()
+	if err != nil {
+		log.Fatalf("Error al obtener stderr: %v", err)
+	}
+
 	if err := comand.Start(); err != nil {
-		log.Fatalln("Error executing comand")
+		log.Fatalf("Error al iniciar el comando: %v", err)
 	}
 
-	// read command's stdout line by line
-	in := bufio.NewScanner(stdout)
+	go func() {
+		scanner := bufio.NewScanner(stdoutPipe)
+		for scanner.Scan() {
+			fmt.Printf("%s\n", scanner.Text())
+		}
+	}()
 
-	for in.Scan() {
-		fmt.Println(in.Text())
+	go func() {
+		scanner := bufio.NewScanner(stderrPipe)
+		for scanner.Scan() {
+			if strings.Contains(scanner.Text(), "Looking for locale") || strings.Contains(scanner.Text(), "Provider `faker.providers.") {
+				continue
+			}
+			fmt.Printf("%s\n", scanner.Text())
+		}
+	}()
+
+	if err := comand.Wait(); err != nil {
+		log.Fatalf("Error al esperar el comando: %v", err)
 	}
+
 }

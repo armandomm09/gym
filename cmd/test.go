@@ -15,7 +15,7 @@ var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "Comando test que ejecuta el script de label en python",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Leer y parsear el archivo YAML de configuración
+
 		yamlData, err := os.ReadFile("config.yaml")
 		if err != nil {
 			log.Fatalf("Error al leer config.yaml: %v", err)
@@ -26,13 +26,11 @@ var testCmd = &cobra.Command{
 			log.Fatalf("Error al parsear YAML: %v", err)
 		}
 
-		// Obtener el valor del flag "num"
 		numImages, _ := cmd.Flags().GetInt("num")
 		if numImages == 0 {
 			numImages = c.Test.NumberOfImages
 		}
 
-		// Usar el path del dataset y el output definidos en el YAML
 		datasetPath := c.RawDataset.Path
 		var outputPath string
 		var saveImages string
@@ -67,12 +65,10 @@ var testCmd = &cobra.Command{
 			log.Fatalln("Error executing comand")
 		}
 
-		// start the command after having set up the pipe
 		if err := comand.Start(); err != nil {
 			log.Fatalln("Error executing comand")
 		}
 
-		// read command's stdout line by line
 		in := bufio.NewScanner(stdout)
 
 		for in.Scan() {

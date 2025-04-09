@@ -1,6 +1,11 @@
 from dataset_conf import insert_video_in_raw_dataset
 import sys
 import json 
+from labelstudio import Labeler
+import logging
+
+logger = logging.getLogger('faker')
+logger.setLevel(logging.NOTSET)
 
 if len(sys.argv) > 1:
     if sys.argv[1] == "pretrain_test":
@@ -22,4 +27,10 @@ if len(sys.argv) > 1:
         coach = Coach(ontology)
         coach.autolabel(input_path, output_path)
         print(ontology)
+    elif sys.argv[1] == "label":
+        print(sys.argv)
+        labeler = Labeler(sys.argv[2], sys.argv[3], sys.argv[4])
+
+        labeler.open_labeler()
         
+# print(sys.argv)

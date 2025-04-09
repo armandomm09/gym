@@ -1,0 +1,6 @@
+names:
+- algae
+- coral
+nc: 2
+train: /Users/armando/Progra/python/ai/gym/python/complete/train/images
+val: /Users/armando/Progra/python/ai/gym/python/complete/valid/images

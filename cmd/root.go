@@ -99,4 +99,6 @@ func init() {
 	insertVideoCmd.Flags().IntP("frames", "f", 0, "The number of between how many frames, a frame will be added to the video")
 
 	rootCmd.AddCommand(autolabelCmd)
+
+	rootCmd.AddCommand(openLabelerCmd)
 }

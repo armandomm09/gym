@@ -4,25 +4,24 @@ from autodistill.detection import CaptionOntology
 import cv2
 import supervision as sv
 import random
-import os
-import matplotlib.pyplot as plt # type: ignore
-import sys
+import matplotlib.pyplot as plt  
 from utils import printProgressBar
-plt.ion()  # Activa el modo interactivo
+plt.ion()  
 
 class Coach():
-    def __init__(self, ontologym):
-        self.base_model = GroundingDINO(ontology=CaptionOntology(ontologym))
+    def __init__(self, ontology):
+        """
+        Initializes the Coach with a given ontology. Sets up the base model for automatic labeling
+        using GroundingDINO and prepares a box annotator for visualization.
+        """
+        self.ontology_dict = ontology
+        self.base_model = GroundingDINO(ontology=CaptionOntology(ontology))
         self.annotator = sv.BoxAnnotator()
         
-
     def autolabel_test(self, directory: str, number_of_test_images: int, out_directory: str = None, save: bool = False, show: bool = False):
         """
-        :param directory: Directory containing the images.
-        :param number_of_test_images: Number of test images to process.
-        :param out_directory: Directory where annotated images will be saved (if applicable).
-        :param save: Boolean flag to indicate whether to save images.
-        :param show: Boolean flag to indicate whether to display images.
+        Randomly selects a specified number of test images from a folder, runs detection on each,
+        optionally saves and/or displays the annotated results. Progress is shown with a progress bar.
         """
         test_images = random.sample(os.listdir(directory), number_of_test_images)
         annotated_images = []
@@ -46,11 +45,15 @@ class Coach():
         plt.show()
     
     def autolabel(self, input_folder, output_folder: str | None = None):
-        if output_folder is None:
-            self.base_model.label(input_folder=input_folder)
-        else:
-            self.base_model.label(input_folder=input_folder, output_folder=output_folder)
-            
-
-    
+        """
+        Performs automated labeling on all images within the input folder using the base model,
+        and generates a `classes.txt` file with all the labels based on the ontology provided.
+        """
+        self.base_model.label(input_folder=input_folder, output_folder=output_folder)
         
+        class_names = list(self.ontology_dict.values())  
+        classes_txt_path = os.path.join(output_folder, 'train/classes.txt')
+
+        with open(classes_txt_path, 'w') as f:
+            for class_name in class_names:
+                f.write(f"{class_name}\n")

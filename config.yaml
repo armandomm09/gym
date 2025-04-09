@@ -1,15 +1,21 @@
+project:
+    title: Reefscape detector
+ls:
+    key: 013d3341828430eee9e60a196b6b401d0bd1a143
+    url: http://localhost:8080
 ontology:
     a teal ball: algae
     a white PVC tube: coral
 raw_dataset:
     path: raw
 dataset:
-    path: complete
+    path: python/complete
+
 test:
     input_path: dataset
     output_path: runs/test
     number_of_images: 4
-    show: false
+    show: True
     save: true
 grounding_dino:
     model_path: models/grounding_dino.pth
